@@ -21,7 +21,10 @@ connectDB();
 
 // Middleware
 app.use(helmet());
-app.use(cors({ origin: FRONTEND_URL, credentials: true }));
+app.use(cors({ 
+  origin: [FRONTEND_URL, FRONTEND_URL + '/', 'http://localhost:5173'], 
+  credentials: true 
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 // app.use(mongoSanitize());
