@@ -20,9 +20,21 @@ const app = express();
 connectDB();
 
 // Middleware
-app.use(helmet());
 app.use(cors({ 
-  origin: [FRONTEND_URL, FRONTEND_URL + '/', 'http://localhost:5173'], 
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin matches allowed list or is a vercel app
+    const allowedOrigins = [FRONTEND_URL, 'http://localhost:5173', 'http://localhost:5000'];
+    const isVercelApp = origin.endsWith('.vercel.app');
+    
+    if (allowedOrigins.includes(origin) || isVercelApp) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true 
 }));
 app.use(express.json({ limit: '10mb' }));
