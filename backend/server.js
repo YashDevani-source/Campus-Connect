@@ -31,6 +31,11 @@ if (NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
+// Root route for deployment check
+app.get('/', (req, res) => {
+  res.send('API is running...');
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'AEGIS Protocol API is running', timestamp: new Date() });
