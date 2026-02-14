@@ -51,9 +51,11 @@ app.use((req, res) => {
 // Global error handler
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`🚀 AEGIS Protocol server running on port ${PORT}`);
-  console.log(`📡 Environment: ${NODE_ENV}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 AEGIS Protocol server running on port ${PORT}`);
+    console.log(`📡 Environment: ${NODE_ENV}`);
+  });
+}
 
 module.exports = app;
