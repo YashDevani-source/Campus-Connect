@@ -28,7 +28,7 @@ exports.getCourseDoubts = async (courseId, userId) => {
   return Doubt.find({ course: courseId })
     .populate('askedBy', 'name rollNumber profilePhoto')
     .populate('replies.author', 'name role profilePhoto')
-    .sort({ createdAt: -1 })
+    .sort({ updatedAt: -1 })
     .lean();
 };
 

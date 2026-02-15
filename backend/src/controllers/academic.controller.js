@@ -2,7 +2,7 @@ const academicService = require('../services/academic.service');
 
 exports.createCourse = async (req, res, next) => {
   try {
-    const course = await academicService.createCourse(req.body, req.user.id);
+    const course = await academicService.createCourse(req.body, req.user);
     res.status(201).json({ success: true, data: course });
   } catch (error) {
     next(error);
@@ -25,6 +25,32 @@ exports.getCourseById = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+exports.getPendingCourses = async (req, res, next) => {
+  try {
+    const courses = await academicService.getPendingCourses(req.user);
+    res.status(200).json({ success: true, data: courses });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateCourseStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body; // 'approved' or 'rejected'
+    const course = await academicService.updateCourseStatus(req.params.id, status, req.user);
+    res.status(200).json({ success: true, data: course });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getFacultyList = async (req, res, next) => {
+  try {
+    const list = await academicService.getFacultyByDepartment(req.query.department);
+    res.status(200).json({ success: true, data: list });
+  } catch (error) { next(error); }
 };
 
 exports.enrollStudent = async (req, res, next) => {
@@ -61,4 +87,11 @@ exports.deleteResource = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+exports.deleteCourse = async (req, res, next) => {
+  try {
+    const result = await academicService.deleteCourse(req.params.id, req.user);
+    res.status(200).json({ success: true, data: result });
+  } catch (error) { next(error); }
 };

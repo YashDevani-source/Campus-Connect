@@ -8,8 +8,8 @@ const CourseApproval = () => {
 
   const fetchCourses = async () => {
     try {
-      const res = await api.get('/courses?status=pending');
-      setCourses(res.data.data.filter(c => c.status === 'pending'));
+      const res = await api.get('/courses/pending');
+      setCourses(res.data.data);
     } catch (err) {
       toast.error('Failed to load courses');
     } finally { setLoading(false); }
@@ -19,7 +19,7 @@ const CourseApproval = () => {
 
   const handleAction = async (id, status) => {
     try {
-      await api.patch(`/admin/courses/${id}/approve`, { status });
+      await api.patch(`/courses/${id}/status`, { status });
       toast.success(`Course ${status}`);
       fetchCourses();
     } catch (err) {

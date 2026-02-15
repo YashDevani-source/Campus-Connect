@@ -59,6 +59,51 @@ const MarksManager = () => {
 
       {tab === 'assign' ? (
         <>
+          <div className="card mb-1" style={{ padding: '1rem', background: 'var(--bg-secondary)' }}>
+            <label className="form-label">Edit Existing Assessment (Optional)</label>
+            <select
+              className="form-select"
+              onChange={(e) => {
+                if (e.target.value === "") {
+                  setForm({ assessmentType: 'quiz', title: '', maxMarks: 100, weightage: 20 });
+                  const initial = {};
+                  students.forEach(s => { initial[s._id] = 0; });
+                  setMarks(initial);
+                } else {
+                  const [type, title] = e.target.value.split('::');
+                  // Find assessment details from first occurrence
+                  let found = null;
+                  for (const m of existingMarks) {
+                    found = m.assessments?.find(a => a.type === type && a.title === title);
+                    if (found) break;
+                  }
+                  if (found) {
+                    setForm({
+                      assessmentType: found.type,
+                      title: found.title,
+                      maxMarks: found.maxMarks,
+                      weightage: found.weightage
+                    });
+                    // Populate marks
+                    const newMarks = {};
+                    students.forEach(s => {
+                      const mDoc = existingMarks.find(em => em.student._id === s._id || em.student === s._id);
+                      const assess = mDoc?.assessments?.find(a => a.type === type && a.title === title);
+                      newMarks[s._id] = assess ? assess.obtainedMarks : 0;
+                    });
+                    setMarks(newMarks);
+                  }
+                }
+              }}
+            >
+              <option value="">-- Create New --</option>
+              {Array.from(new Set(existingMarks.flatMap(m => m.assessments?.map(a => `${a.type}::${a.title}`) || []))).map(key => {
+                const [type, title] = key.split('::');
+                return <option key={key} value={key}>{title} ({type})</option>;
+              })}
+            </select>
+          </div>
+
           <div className="form-row mb-1">
             <div className="form-group">
               <label className="form-label">Type</label>
@@ -85,14 +130,80 @@ const MarksManager = () => {
       ) : (
         <div className="data-table-container">
           <table className="data-table">
-            <thead><tr><th>Name</th><th>Assessments</th><th>Total %</th><th>Grade</th></tr></thead>
+            <thead><tr><th>Name</th><th>Assessments</th><th>Total %</th><th>Grade</th><th>Actions</th></tr></thead>
             <tbody>
               {existingMarks.map(m => (
                 <tr key={m._id}>
                   <td>{m.student?.name || '—'}</td>
-                  <td>{m.assessments?.map(a => `${a.title}: ${a.obtainedMarks}/${a.maxMarks}`).join(', ') || '—'}</td>
+                  <td>
+                    {m.assessments?.map((a, i) => (
+                      <span key={i}
+                        style={{ cursor: 'pointer', textDecoration: 'underline', marginRight: '0.5rem', display: 'inline-block' }}
+                        title="Click to edit"
+                        onClick={() => {
+                          const newScore = prompt(`Update marks for ${a.title} (${a.type})\nMax: ${a.maxMarks}`, a.obtainedMarks);
+                          if (newScore !== null && !isNaN(newScore)) {
+                            const score = Number(newScore);
+                            if (score < 0 || score > a.maxMarks) {
+                              toast.error(`Marks must be between 0 and ${a.maxMarks}`);
+                              return;
+                            }
+                            // Call API to update specific assessment mark
+                            // We reused the assign marks API which handles array of marks.
+                            // We can construct a payload just for this student and assessment.
+                            const payload = {
+                              assessmentType: a.type,
+                              title: a.title,
+                              maxMarks: Number(a.maxMarks) || 100,
+                              weightage: Number(a.weightage) || 0,
+                              marks: [{
+                                student: (m.student?._id || m.student).toString(),
+                                obtainedMarks: score
+                              }]
+                            };
+
+                            api.post(`/faculty/courses/${courseId}/marks`, payload)
+                              .then((res) => {
+                                toast.success('Marks updated');
+                                // Refresh data
+                                return api.get(`/faculty/courses/${courseId}/marks`);
+                              })
+                              .then((res) => setExistingMarks(res.data.data))
+                              .catch(err => {
+                                console.error(err);
+                                toast.error(err.response?.data?.message || 'Failed to update');
+                              });
+                          }
+                        }}
+                      >
+                        {a.title}: {a.obtainedMarks}/{a.maxMarks}
+                      </span>
+                    )) || '—'}
+                  </td>
                   <td>{m.totalWeighted?.toFixed(1)}%</td>
-                  <td><span className="badge">{m.grade || '—'}</span></td>
+                  <td>
+                    {/* Allow editing grade */}
+                    <select
+                      value={m.grade || ''}
+                      onChange={async (e) => {
+                        try {
+                          const newGrade = e.target.value;
+                          const updated = existingMarks.map(em => em._id === m._id ? { ...em, grade: newGrade } : em);
+                          setExistingMarks(updated);
+                          await api.post(`/faculty/courses/${courseId}/grade`, { studentId: m.student?._id || m.student, grade: newGrade });
+                          toast.success('Grade updated');
+                        } catch (err) { toast.error('Failed to update grade'); }
+                      }}
+                      className="form-select"
+                      style={{ padding: '0.25rem', width: '80px' }}
+                    >
+                      <option value="">-</option>
+                      {['AA', 'AB', 'BB', 'BC', 'CC', 'CD', 'F'].map(g => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </td>
+                  <td>
+                    {m.isManualGrade && <span className="badge badge-warning" style={{ fontSize: '0.7em' }}>Manual</span>}
+                  </td>
                 </tr>
               ))}
             </tbody>

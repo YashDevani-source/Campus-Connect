@@ -2245,6 +2245,10 @@ a:hover {
   margin-bottom: 2rem;
 }
 
+.menu-item-danger:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
 .action-card {
   background: var(--bg-card);
   border: 1px solid var(--border);

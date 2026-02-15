@@ -150,7 +150,11 @@ exports.getAttendanceAnalytics = async (courseId, facultyId) => {
   };
 };
 
-exports.assignMarks = async (courseId, facultyId, marksData) => {
+exports.assignMarks = async (courseId, facultyId, marksData) => { // Check course ownership
+  if (!courseId || !facultyId) {
+    throw new Error('Invalid parameters');
+  }
+  console.log(`Assign Marks Request: courseId=${courseId}, facultyId=${facultyId}, data=${JSON.stringify(marksData)}`);
   const course = await Course.findOne({ _id: courseId, instructor: facultyId });
   if (!course) {
     const err = new Error('Course not found or access denied');
@@ -158,36 +162,58 @@ exports.assignMarks = async (courseId, facultyId, marksData) => {
     throw err;
   }
 
-  const { assessmentType, title, maxMarks, weightage, marks: studentMarks } = marksData;
+  const { assessmentType, title, maxMarks, weightage, marks } = marksData;
   const results = [];
+  const errors = [];
 
-  for (const sm of studentMarks) {
-    let marksDoc = await Marks.findOne({ course: courseId, student: sm.student });
-    if (!marksDoc) {
-      marksDoc = new Marks({ course: courseId, student: sm.student, assessments: [] });
+  // Sequential processing
+  for (const item of marks) {
+    const { student, obtainedMarks } = item;
+    try {
+      if (!student) throw new Error('Student ID missing');
+
+      // Ensure student is just the ID string if it came as object (though Joi handles this)
+      const studentId = typeof student === 'object' ? student.id || student._id : student;
+
+      let markDoc = await Marks.findOne({ course: courseId, student: studentId });
+      if (!markDoc) {
+        // Create new if not exists
+        markDoc = new Marks({ course: courseId, student: studentId, assessments: [] });
+      }
+
+      // Check if assessment exists
+      const existingAssessIndex = markDoc.assessments.findIndex(
+        (a) => a.type === assessmentType && a.title === title
+      );
+
+      if (existingAssessIndex >= 0) {
+        // Update existing assessment
+        markDoc.assessments[existingAssessIndex].obtainedMarks = obtainedMarks;
+        markDoc.assessments[existingAssessIndex].maxMarks = maxMarks;
+        markDoc.assessments[existingAssessIndex].weightage = weightage;
+      } else {
+        // Add new assessment
+        markDoc.assessments.push({
+          type: assessmentType,
+          title,
+          maxMarks,
+          obtainedMarks,
+          weightage,
+        });
+      }
+
+      // Save triggers calculation
+      await markDoc.save();
+      results.push(markDoc);
+    } catch (e) {
+      console.error(`Failed to save marks for student ${student}:`, e);
+      errors.push(`Failed for student ${student}: ${e.message}`);
     }
+  }
 
-    // Check if this assessment type+title already exists
-    const existingIndex = marksDoc.assessments.findIndex(
-      a => a.type === assessmentType && a.title === title
-    );
-
-    const assessment = {
-      type: assessmentType,
-      title,
-      maxMarks,
-      obtainedMarks: sm.obtainedMarks,
-      weightage,
-    };
-
-    if (existingIndex >= 0) {
-      marksDoc.assessments[existingIndex] = assessment;
-    } else {
-      marksDoc.assessments.push(assessment);
-    }
-
-    await marksDoc.save(); // triggers pre-save grade calculation
-    results.push(marksDoc);
+  if (errors.length > 0 && results.length === 0) {
+    // If all failed
+    throw new Error(`Mark assignment failed: ${errors.join(', ')}`);
   }
 
   return results;
@@ -217,7 +243,7 @@ exports.getCourseDoubts = async (courseId, facultyId) => {
   return Doubt.find({ course: courseId })
     .populate('askedBy', 'name rollNumber profilePhoto')
     .populate('replies.author', 'name role profilePhoto')
-    .sort({ createdAt: -1 })
+    .sort({ updatedAt: -1 })
     .lean();
 };
 
@@ -245,4 +271,38 @@ exports.resolveDoubt = async (doubtId, facultyId) => {
   doubt.isResolved = true;
   await doubt.save();
   return doubt;
+};
+
+exports.updateGrade = async (courseId, facultyId, { studentId, grade }) => {
+  const course = await Course.findOne({ _id: courseId, instructor: facultyId });
+  if (!course) {
+    const err = new Error('Course not found or access denied');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const marks = await Marks.findOne({ course: courseId, student: studentId });
+  if (!marks) {
+    // Maybe create if doesn't exist? But grading usually happens after marks.
+    // Let's create a blank record if needed, but safer to assume marks exist.
+    // If not, we can create one.
+    const newMarks = new Marks({
+      course: courseId,
+      student: studentId,
+      assessments: [], // No assessments yet
+      grade: grade, // Set manual grade
+      isManualGrade: true,
+      totalWeighted: 0
+    });
+    // Need to handle grade points manually? Or use helper.
+    // For simplicity, let's just save.
+    // We should probably map grade to points if possible, but let's stick to just saving for now.
+    await newMarks.save();
+    return newMarks;
+  }
+
+  marks.grade = grade;
+  marks.isManualGrade = true;
+  await marks.save();
+  return marks;
 };
