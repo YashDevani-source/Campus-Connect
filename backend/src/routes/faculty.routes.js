@@ -27,6 +27,7 @@ router.get('/courses/:id/attendance/analytics', facultyController.getAttendanceA
 // Marks
 router.post('/courses/:id/marks', validate(assignMarksSchema), facultyController.assignMarks);
 router.get('/courses/:id/marks', facultyController.getCourseMarks);
+router.post('/courses/:id/grade', facultyController.updateGrade);
 
 // Doubts
 router.get('/courses/:id/doubts', facultyController.getCourseDoubts);

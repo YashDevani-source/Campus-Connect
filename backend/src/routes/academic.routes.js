@@ -10,7 +10,11 @@ const { createCourseSchema, createResourceSchema } = require('../validators/acad
 router.use(auth);
 
 // Course CRUD
-router.post('/', authorize('faculty', 'admin'), validate(createCourseSchema), academicController.createCourse);
+router.post('/', authorize('faculty', 'admin', 'managementMember'), validate(createCourseSchema), academicController.createCourse);
+router.get('/pending', authorize('admin', 'managementMember'), academicController.getPendingCourses);
+router.get('/faculty-list', authorize('admin', 'managementMember'), academicController.getFacultyList);
+router.patch('/:id/status', authorize('admin', 'managementMember'), academicController.updateCourseStatus);
+
 router.get('/', academicController.getAllCourses);
 router.get('/:id', academicController.getCourseById);
 
@@ -22,6 +26,9 @@ router.post('/:id/resources', authorize('faculty', 'admin'), validate(createReso
 router.get('/:id/resources', academicController.getResources);
 
 // Delete resource (separate route for resource id)
-router.delete('/resources/:id', authorize('faculty', 'admin'), academicController.deleteResource);
+router.delete('/resources/:id', authorize('faculty', 'admin', 'managementMember'), academicController.deleteResource);
+
+// Delete course
+router.delete('/:id', authorize('admin', 'managementMember'), academicController.deleteCourse);
 
 module.exports = router;

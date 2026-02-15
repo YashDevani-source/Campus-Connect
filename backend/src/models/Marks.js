@@ -28,6 +28,7 @@ const marksSchema = new mongoose.Schema(
     totalWeighted: { type: Number, default: 0 },
     grade: { type: String },
     gradePoint: { type: Number },
+    isManualGrade: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
@@ -35,28 +36,32 @@ const marksSchema = new mongoose.Schema(
 marksSchema.index({ course: 1, student: 1 }, { unique: true });
 
 // Auto-calculate totalWeighted and grade before save
-marksSchema.pre('save', function () {
+marksSchema.pre('save', async function () {
   if (this.assessments && this.assessments.length > 0) {
     let totalWeighted = 0;
     let totalWeightage = 0;
     this.assessments.forEach((a) => {
-      if (a.maxMarks > 0) {
+      // Calculate based on weightage if maxMarks > 0
+      if (typeof a.maxMarks === 'number' && a.maxMarks > 0) {
         totalWeighted += (a.obtainedMarks / a.maxMarks) * a.weightage;
         totalWeightage += a.weightage;
       }
     });
+
     // Normalize if total weightage isn't 100
     this.totalWeighted = totalWeightage > 0 ? (totalWeighted / totalWeightage) * 100 : 0;
 
-    // Grade mapping
-    const score = this.totalWeighted;
-    if (score >= 90) { this.grade = 'AA'; this.gradePoint = 10; }
-    else if (score >= 80) { this.grade = 'AB'; this.gradePoint = 9; }
-    else if (score >= 70) { this.grade = 'BB'; this.gradePoint = 8; }
-    else if (score >= 60) { this.grade = 'BC'; this.gradePoint = 7; }
-    else if (score >= 50) { this.grade = 'CC'; this.gradePoint = 6; }
-    else if (score >= 40) { this.grade = 'CD'; this.gradePoint = 5; }
-    else { this.grade = 'F'; this.gradePoint = 0; }
+    // Grade calculation - only if NOT manual
+    if (!this.isManualGrade) {
+      const score = this.totalWeighted;
+      if (score >= 90) { this.grade = 'AA'; this.gradePoint = 10; }
+      else if (score >= 80) { this.grade = 'AB'; this.gradePoint = 9; }
+      else if (score >= 70) { this.grade = 'BB'; this.gradePoint = 8; }
+      else if (score >= 60) { this.grade = 'BC'; this.gradePoint = 7; }
+      else if (score >= 50) { this.grade = 'CC'; this.gradePoint = 6; }
+      else if (score >= 40) { this.grade = 'CD'; this.gradePoint = 5; }
+      else { this.grade = 'F'; this.gradePoint = 0; }
+    }
   }
 });
 

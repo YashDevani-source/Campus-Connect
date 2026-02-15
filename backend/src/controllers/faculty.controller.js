@@ -90,3 +90,10 @@ exports.resolveDoubt = async (req, res, next) => {
     res.status(200).json({ success: true, data });
   } catch (error) { next(error); }
 };
+
+exports.updateGrade = async (req, res, next) => {
+  try {
+    const data = await facultyService.updateGrade(req.params.id, req.user.id, req.body);
+    res.status(200).json({ success: true, data });
+  } catch (error) { next(error); }
+};

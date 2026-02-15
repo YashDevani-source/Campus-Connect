@@ -258,6 +258,7 @@ const ManagementDash = () => {
         <ActionCard icon={<HiOutlineDocumentText />} title="Certificates" desc="Issue student certificates" to="/management/certificates" color="purple" delay="0.25s" />
         <ActionCard icon={<HiOutlineIdentification />} title="ID Cards" desc="Manage student ID cards" to="/management/idcards" color="info" delay="0.3s" />
         <ActionCard icon={<HiOutlineBriefcase />} title="Opportunities" desc="Post internships & research" to="/opportunities" color="success" delay="0.35s" />
+        <ActionCard icon={<HiOutlineAcademicCap />} title="Course Management" desc="Approve & assign courses" to="/admin/course-approval" color="accent" delay="0.4s" />
       </div>
     </>
   );

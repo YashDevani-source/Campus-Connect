@@ -100,7 +100,7 @@ const AppRoutes = () => {
           <ProtectedRoute allowedRoles={['admin']}><GlobalGrievances /></ProtectedRoute>
         } />
         <Route path="/admin/course-approval" element={
-          <ProtectedRoute allowedRoles={['admin']}><CourseApproval /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={['admin', 'managementMember']}><CourseApproval /></ProtectedRoute>
         } />
 
         {/* ═══════════ Faculty Routes ═══════════ */}

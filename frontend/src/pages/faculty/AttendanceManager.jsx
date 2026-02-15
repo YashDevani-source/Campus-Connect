@@ -19,8 +19,16 @@ const AttendanceManager = () => {
         const res = await api.get(`/faculty/courses/${courseId}/students`);
         const studentList = res.data.data || [];
         setStudents(studentList);
+
+        // Load initial attendance for today
+        const attRes = await api.get(`/faculty/courses/${courseId}/attendance?date=${new Date().toISOString().split('T')[0]}`);
+        const todayRecords = attRes.data.data?.[0]?.records || [];
+
         const init = {};
-        studentList.forEach(s => { init[s._id] = 'present'; });
+        studentList.forEach(s => {
+          const found = todayRecords.find(r => r.student._id === s._id || r.student === s._id);
+          init[s._id] = found ? found.status : 'present';
+        });
         setAttendance(init);
       } catch (err) { toast.error('Failed to load students'); }
       finally { setLoading(false); }
