@@ -28,12 +28,14 @@ Base URL: `/api`
 
 | Method | Endpoint | Description | Roles | Body |
 | :--- | :--- | :--- | :--- | :--- |
-| `POST` | `/` | Create a new course | Faculty, Admin | `{ code, name, description, credits }` |
-| `GET` | `/` | Get all courses | Authenticated | - |
+| `POST` | `/` | Create a new course | Faculty, Admin | `{ code, title, description, credits, department, semester }` |
+| `GET` | `/` | Get all courses (Faculty sees all their own, others see approved) | Authenticated | - |
+| `GET` | `/pending` | Get pending courses for approval | Admin, Management | - |
 | `GET` | `/:id` | Get course details | Authenticated | - |
 | `POST` | `/:id/enroll` | Enroll in a course | Student | - |
 | `POST` | `/:id/resources` | Add course resource | Faculty, Admin | `{ title, type, url, description }` |
 | `GET` | `/:id/resources` | Get course resources | Authenticated | - |
+| `PATCH` | `/:id/status` | Approve/Reject course | Admin, Management | `{ status }` (approved, rejected) |
 | `DELETE` | `/resources/:id` | Delete a resource | Faculty, Admin | - |
 
 ## Internships & Opportunities (`/opportunities`)

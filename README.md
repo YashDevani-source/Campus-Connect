@@ -4,15 +4,17 @@ A comprehensive Campus Digital Ecosystem designed to modernize academic and admi
 
 ## 🚀 Features
 
-- **User Dashboard**: Centralized view of academic activities and notifications.
-- **Academic Management**: Course registration, timetable tracking, and grade viewing.
+- **Role-Based Dashboards**: Tailored views for Students, Faculty, Management, and Admins.
+- **Academic Management**: 
+  - **Course Approval Workflow**: Faculty propose courses, Admin/Management approve them.
+  - Course registration, timetable tracking, and grade viewing.
 - **Grievance Redressal System**: 
   - Submit complaints regarding academics, infrastructure, hostels, etc.
-  - **High Priority Reporting**: special handling for sensitive issues like Ragging and Sexual Harassment.
+  - **High Priority Reporting**: Special handling for sensitive issues like Ragging.
   - Track complaint status and history.
 - **Internship & Opportunities**: Browse and apply for campus internships and projects.
 - **Transport Services**: View shuttle timings and book transport.
-- **Secure Authentication**: Role-based access control (Student, Faculty, Admin) using JWT.
+- **Secure Authentication**: Role-based access control using JWT.
 
 ## 🛠 Tech Stack
 
