@@ -31,7 +31,7 @@ const GrievanceManager = () => {
   const handleStatusUpdate = async (id, status) => {
     setUpdating(id);
     try {
-      await api.put(`/management/grievances/${id}/status`, { status });
+      await api.patch(`/management/grievances/${id}/status`, { status });
       toast.success(`Status updated to ${status}`);
       fetchGrievances();
     } catch (err) { toast.error('Failed to update status'); }
@@ -41,7 +41,7 @@ const GrievanceManager = () => {
   const handleComment = async (id) => {
     if (!comment[id]?.trim()) return;
     try {
-      await api.post(`/management/grievances/${id}/comment`, { text: comment[id] });
+      await api.post(`/management/grievances/${id}/comments`, { text: comment[id] });
       toast.success('Comment added');
       setComment({ ...comment, [id]: '' });
       fetchGrievances();

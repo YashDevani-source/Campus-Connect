@@ -64,10 +64,10 @@ const Footer = () => {
           <div>
             <h4 style={{ fontWeight: '700', marginBottom: '1rem', color: 'var(--text-primary)' }}>Connect</h4>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <SocialIcon href="#" icon={<FaTwitter />} color="#1DA1F2" />
-              <SocialIcon href="#" icon={<FaLinkedin />} color="#0A66C2" />
+              <SocialIcon href="https://x.com/YashDevani2106" icon={<FaTwitter />} color="#1DA1F2" />
+              <SocialIcon href="https://www.linkedin.com/in/yash-devani-744297324/" icon={<FaLinkedin />} color="#0A66C2" />
               <SocialIcon href="#" icon={<FaInstagram />} color="#E1306C" />
-              <SocialIcon href="#" icon={<FaGithub />} color="#333" />
+              <SocialIcon href="https://github.com/YashDevani-source/Campus-Connect" icon={<FaGithub />} color="#333" />
             </div>
           </div>
         </div>

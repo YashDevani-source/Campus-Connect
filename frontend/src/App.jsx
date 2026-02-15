@@ -26,6 +26,7 @@ import CourseApproval from './pages/admin/CourseApproval';
 
 // ─── Faculty Pages ───
 import MyCourses from './pages/faculty/MyCourses';
+import FacultyCourseProposal from './pages/faculty/FacultyCourseProposal';
 import AttendanceManager from './pages/faculty/AttendanceManager';
 import AttendanceAnalytics from './pages/faculty/AttendanceAnalytics';
 import MarksManager from './pages/faculty/MarksManager';
@@ -107,6 +108,9 @@ const AppRoutes = () => {
         <Route path="/faculty/courses" element={
           <ProtectedRoute allowedRoles={['faculty']}><MyCourses /></ProtectedRoute>
         } />
+        <Route path="/faculty/propose-course" element={
+          <ProtectedRoute allowedRoles={['faculty']}><FacultyCourseProposal /></ProtectedRoute>
+        } />
         <Route path="/faculty/attendance/:courseId" element={
           <ProtectedRoute allowedRoles={['faculty']}><AttendanceManager /></ProtectedRoute>
         } />
@@ -135,6 +139,9 @@ const AppRoutes = () => {
         } />
         <Route path="/management/idcards" element={
           <ProtectedRoute allowedRoles={['managementMember']}><IDCardManager /></ProtectedRoute>
+        } />
+        <Route path="/management/course-approval" element={
+          <ProtectedRoute allowedRoles={['managementMember']}><CourseApproval /></ProtectedRoute>
         } />
 
         {/* ═══════════ Student Routes ═══════════ */}

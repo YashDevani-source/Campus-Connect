@@ -6,7 +6,7 @@ const User = require('../models/User');
 const Resource = require('../models/Resource');
 
 exports.getMyCourses = async (facultyId) => {
-  return Course.find({ instructor: facultyId, status: 'approved' })
+  return Course.find({ instructor: facultyId })
     .populate('enrolledStudents', 'name email rollNumber')
     .sort({ createdAt: -1 })
     .lean();

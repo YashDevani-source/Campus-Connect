@@ -46,7 +46,12 @@ const MyCourses = () => {
               <div className="course-card-accent" style={{ background: colors[i % colors.length] }} />
               <div className="course-card-head">
                 <h3>{c.title}</h3>
-                <span className="badge" style={{ background: `${colors[i % colors.length]}20`, color: colors[i % colors.length] }}>{c.code}</span>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <span className="badge" style={{ background: `${colors[i % colors.length]}20`, color: colors[i % colors.length] }}>{c.code}</span>
+                  {c.status === 'pending' && <span className="badge badge-warning">Pending</span>}
+                  {c.status === 'rejected' && <span className="badge badge-danger">Rejected</span>}
+                  {c.status === 'approved' && <span className="badge badge-success">Active</span>}
+                </div>
               </div>
               <div className="course-card-details">
                 <span><HiOutlineUsers /> {c.enrolledStudents?.length || 0} students</span>
