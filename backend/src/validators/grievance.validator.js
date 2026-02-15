@@ -3,7 +3,7 @@ const Joi = require('joi');
 const createGrievanceSchema = Joi.object({
   title: Joi.string().trim().max(200).required(),
   description: Joi.string().max(2000).required(),
-  category: Joi.string().valid('academic', 'infrastructure', 'hostel', 'other').default('other'),
+  category: Joi.string().valid('academic', 'infrastructure', 'hostel', 'ragging', 'sexual-harassment', 'other').default('other'),
   priority: Joi.string().valid('low', 'medium', 'high').default('medium'),
 });
 

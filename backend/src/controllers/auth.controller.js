@@ -53,3 +53,16 @@ exports.updateProfile = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.searchUsers = async (req, res, next) => {
+  const keyword = req.query.search;
+  if (!keyword) {
+    return res.status(400).json({ success: false, message: "No search term" });
+  }
+  try {
+    const users = await authService.searchUsers(keyword, req.user.id);
+    res.status(200).json({ success: true, data: users });
+  } catch (error) {
+    next(error);
+  }
+};

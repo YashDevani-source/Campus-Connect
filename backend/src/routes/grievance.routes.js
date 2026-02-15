@@ -14,22 +14,22 @@ const {
 // All routes require authentication
 router.use(auth);
 
-// Student creates grievance
-router.post('/', authorize('student'), validate(createGrievanceSchema), grievanceController.create);
+// Student & Faculty create grievance
+router.post('/', authorize('student', 'faculty'), validate(createGrievanceSchema), grievanceController.create);
 
-// List grievances (students see own, authority/admin see all)
-router.get('/', authorize('student', 'authority', 'admin'), grievanceController.getAll);
+// List grievances (students/faculty see own, managementMember/admin see all)
+router.get('/', authorize('student', 'faculty', 'managementMember', 'admin'), grievanceController.getAll);
 
 // Get single grievance
-router.get('/:id', authorize('student', 'authority', 'admin'), grievanceController.getById);
+router.get('/:id', authorize('student', 'faculty', 'managementMember', 'admin'), grievanceController.getById);
 
-// Authority/Admin update status
-router.patch('/:id/status', authorize('authority', 'admin'), validate(updateStatusSchema), grievanceController.updateStatus);
+// ManagementMember/Admin update status
+router.patch('/:id/status', authorize('managementMember', 'admin'), validate(updateStatusSchema), grievanceController.updateStatus);
 
 // Add comment (all involved parties)
-router.post('/:id/comments', authorize('student', 'authority', 'admin'), validate(addCommentSchema), grievanceController.addComment);
+router.post('/:id/comments', authorize('student', 'faculty', 'managementMember', 'admin'), validate(addCommentSchema), grievanceController.addComment);
 
-// Admin assigns grievance to authority
+// Admin assigns grievance to managementMember
 router.patch('/:id/assign', authorize('admin'), validate(assignGrievanceSchema), grievanceController.assign);
 
 module.exports = router;

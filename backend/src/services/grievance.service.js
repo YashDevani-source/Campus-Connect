@@ -5,7 +5,7 @@ exports.create = async (data, userId) => {
   if (sensitiveCategories.includes(data.category)) {
     data.priority = 'high';
   }
-  
+
   const grievance = await Grievance.create({
     ...data,
     submittedBy: userId,
@@ -18,8 +18,8 @@ exports.getAll = async (query, userRole, userId) => {
   const { page = 1, limit = 20, status, category } = query;
   const filter = {};
 
-  // Students see only their own
-  if (userRole === 'student') {
+  // Students and faculty see only their own
+  if (userRole === 'student' || userRole === 'faculty') {
     filter.submittedBy = userId;
   }
 
@@ -51,8 +51,8 @@ exports.getById = async (id, userRole, userId) => {
     throw err;
   }
 
-  // Students can only see their own
-  if (userRole === 'student' && grievance.submittedBy._id.toString() !== userId.toString()) {
+  // Students and faculty can only see their own
+  if ((userRole === 'student' || userRole === 'faculty') && grievance.submittedBy._id.toString() !== userId.toString()) {
     const err = new Error('Access denied');
     err.statusCode = 403;
     throw err;

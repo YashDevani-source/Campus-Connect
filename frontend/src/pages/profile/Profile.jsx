@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-hot-toast';
-import { 
-  HiOutlineUser, HiOutlineAcademicCap, HiOutlineBriefcase, 
+import api from '../../api/axios';
+import {
+  HiOutlineUser, HiOutlineAcademicCap, HiOutlineBriefcase,
   HiOutlineDocumentText, HiOutlinePencilAlt, HiOutlineDownload,
   HiOutlineLocationMarker, HiOutlinePhone, HiOutlineMail,
-  HiOutlineIdentification, HiOutlineUserGroup, HiOutlineLightningBolt
+  HiOutlineIdentification, HiOutlineUserGroup, HiOutlineLightningBolt,
+  HiOutlineChartBar, HiOutlineExternalLink, HiOutlineCalendar, HiOutlineArrowRight
 } from 'react-icons/hi';
 
 const Profile = () => {
@@ -39,13 +42,18 @@ const Profile = () => {
     ]
   };
 
+  const isStudent = user.role === 'student';
+
   const tabs = [
     { id: 'basic', label: 'Basic Info', icon: <HiOutlineUser /> },
     { id: 'academic', label: 'Academic', icon: <HiOutlineAcademicCap /> },
     { id: 'personal', label: 'Personal', icon: <HiOutlineLocationMarker /> },
     { id: 'family', label: 'Family', icon: <HiOutlineUserGroup /> },
     { id: 'skills', label: 'Skills & Projects', icon: <HiOutlineLightningBolt /> },
-    { id: 'certs', label: 'Certificates', icon: <HiOutlineDocumentText /> },
+    ...(isStudent ? [
+      { id: 'certs', label: 'Certificates', icon: <HiOutlineDocumentText /> },
+      { id: 'report', label: 'Report Card', icon: <HiOutlineChartBar /> },
+    ] : []),
   ];
 
   const handleDownloadID = () => {
@@ -54,20 +62,20 @@ const Profile = () => {
 
   return (
     <div className="page-container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
-      
+
       {/* Top Banner Profile Header */}
-      <div style={{ 
-        background: 'var(--bg-card)', 
-        borderRadius: 'var(--radius-lg)', 
-        padding: '2rem', 
+      <div style={{
+        background: 'var(--bg-card)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '2rem',
         marginBottom: '2rem',
         border: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', gap: '2rem',
         flexWrap: 'wrap'
       }}>
-        <div style={{ 
-          width: '100px', height: '100px', 
-          borderRadius: '50%', 
+        <div style={{
+          width: '100px', height: '100px',
+          borderRadius: '50%',
           background: 'var(--bg-input)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '3rem', color: 'var(--accent)',
@@ -90,7 +98,7 @@ const Profile = () => {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: '2rem', alignItems: 'start' }}>
-        
+
         {/* Sidebar Navigation */}
         <div style={{ background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', padding: '0.5rem', border: '1px solid var(--border)' }}>
           {tabs.map(tab => (
@@ -117,7 +125,7 @@ const Profile = () => {
 
         {/* content Area */}
         <div style={{ background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', padding: '2rem', border: '1px solid var(--border)', minHeight: '400px' }}>
-          
+
           {activeTab === 'basic' && (
             <div>
               <h2 className="section-title" style={{ marginBottom: '1.5rem', fontSize: '1.2rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)' }}>Basic Information</h2>
@@ -133,7 +141,7 @@ const Profile = () => {
           )}
 
           {activeTab === 'academic' && (
-             <div>
+            <div>
               <h2 className="section-title" style={{ marginBottom: '1.5rem', fontSize: '1.2rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)' }}>Academic Record</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
                 <InfoItem label="Course" value="B.Tech" />
@@ -143,7 +151,7 @@ const Profile = () => {
               </div>
 
               <h3 style={{ fontSize: '1rem', marginBottom: '1rem' }}>Semester Performance</h3>
-               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {userData.academicDetails.map((sem, idx) => (
                   <div key={idx} style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
@@ -157,8 +165,8 @@ const Profile = () => {
                     </div>
                   </div>
                 ))}
-               </div>
-             </div>
+              </div>
+            </div>
           )}
 
           {activeTab === 'personal' && (
@@ -174,7 +182,7 @@ const Profile = () => {
           )}
 
           {activeTab === 'family' && (
-             <div>
+            <div>
               <h2 className="section-title" style={{ marginBottom: '1.5rem', fontSize: '1.2rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)' }}>Family Details</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
                 <InfoItem label="Father's Name" value={userData.parentDetails.fatherName} />
@@ -187,13 +195,13 @@ const Profile = () => {
           {activeTab === 'skills' && (
             <div>
               <h2 className="section-title" style={{ marginBottom: '1.5rem', fontSize: '1.2rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)' }}>Skills & Projects</h2>
-              
+
               <div style={{ marginBottom: '2rem' }}>
                 <h3 style={{ fontSize: '0.95rem', marginBottom: '0.75rem', color: 'var(--text-secondary)' }}>Technical Skills</h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {userData.skills.map((skill, idx) => (
-                    <span key={idx} style={{ 
-                      padding: '0.4rem 0.8rem', borderRadius: '20px', 
+                    <span key={idx} style={{
+                      padding: '0.4rem 0.8rem', borderRadius: '20px',
                       background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent)',
                       fontSize: '0.85rem', fontWeight: '500'
                     }}>{skill}</span>
@@ -201,7 +209,7 @@ const Profile = () => {
                 </div>
               </div>
 
-               <div>
+              <div>
                 <h3 style={{ fontSize: '0.95rem', marginBottom: '1rem', color: 'var(--text-secondary)' }}>Projects</h3>
                 {userData.projects.map((proj, idx) => (
                   <div key={idx} style={{ marginBottom: '1rem', paddingLeft: '1rem', borderLeft: '2px solid var(--border)' }}>
@@ -210,20 +218,179 @@ const Profile = () => {
                     <a href={proj.link} style={{ fontSize: '0.8rem', color: 'var(--accent)' }}>View Project &rarr;</a>
                   </div>
                 ))}
-               </div>
+              </div>
             </div>
           )}
 
-          {activeTab === 'certs' && (
-            <div className="empty-state">
-              <HiOutlineDocumentText style={{ fontSize: '3rem', color: 'var(--text-muted)', marginBottom: '1rem' }} />
-              <p>No certificates uploaded yet.</p>
-              <button className="btn btn-sm btn-primary">Upload Certificate</button>
-            </div>
-          )}
+          {activeTab === 'certs' && <CertificatesTab />}
+
+          {activeTab === 'report' && <ReportCardTab />}
 
         </div>
       </div>
+    </div>
+  );
+};
+
+/* ═══════ CERTIFICATES TAB (fetches from API) ═══════ */
+const CertificatesTab = () => {
+  const [certificates, setCertificates] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const res = await api.get('/student/certificates');
+        setCertificates(res.data.data || []);
+      } catch { }
+      finally { setLoading(false); }
+    };
+    fetch();
+  }, []);
+
+  const typeColors = {
+    course: 'var(--accent)', internship: 'var(--success)',
+    achievement: 'var(--warning)', other: 'var(--text-secondary)'
+  };
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '2rem' }}><div className="spinner" /><p>Loading certificates...</p></div>;
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)' }}>
+        <h2 className="section-title" style={{ margin: 0 }}>My Certificates</h2>
+        <Link to="/student/certificates" className="btn btn-sm btn-outline" style={{ textDecoration: 'none' }}>
+          View All <HiOutlineArrowRight />
+        </Link>
+      </div>
+
+      {certificates.length === 0 ? (
+        <div className="empty-state-card">
+          <HiOutlineDocumentText style={{ fontSize: '3rem', color: 'var(--text-muted)' }} />
+          <h3>No Certificates</h3>
+          <p>Certificates issued to you will appear here.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
+          {certificates.map((cert, idx) => (
+            <div key={cert._id} className="cert-card animate-scale-in" style={{ animationDelay: `${idx * 0.08}s` }}>
+              <div className="cert-card-accent" style={{ background: typeColors[cert.type] || 'var(--accent)' }} />
+              <div className="cert-card-icon" style={{ color: typeColors[cert.type] || 'var(--accent)' }}>
+                <HiOutlineDocumentText />
+              </div>
+              <h3 className="cert-title">{cert.title}</h3>
+              <span className="badge" style={{ background: `${typeColors[cert.type]}15`, color: typeColors[cert.type], margin: '0.5rem 0' }}>
+                {cert.type}
+              </span>
+              <div className="cert-details">
+                <span><HiOutlineUser /> {cert.issuer}</span>
+                <span><HiOutlineCalendar /> {new Date(cert.issueDate).toLocaleDateString()}</span>
+              </div>
+              {cert.fileUrl && (
+                <a href={cert.fileUrl} target="_blank" rel="noreferrer" className="btn btn-sm btn-outline" style={{ marginTop: 'auto' }}>
+                  <HiOutlineExternalLink /> View
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ═══════ REPORT CARD TAB (fetches CGPA from API) ═══════ */
+const ReportCardTab = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const res = await api.get('/student/cgpa');
+        setData(res.data.data);
+      } catch { }
+      finally { setLoading(false); }
+    };
+    fetch();
+  }, []);
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '2rem' }}><div className="spinner" /><p>Loading report...</p></div>;
+
+  if (!data || !data.semesters?.length) return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)' }}>
+        <h2 className="section-title" style={{ margin: 0 }}>Report Card</h2>
+        <Link to="/student/report" className="btn btn-sm btn-outline" style={{ textDecoration: 'none' }}>
+          Full Report <HiOutlineArrowRight />
+        </Link>
+      </div>
+      <div className="empty-state-card">
+        <HiOutlineChartBar style={{ fontSize: '3rem', color: 'var(--text-muted)' }} />
+        <h3>No Academic Data</h3>
+        <p>Semester reports have not been generated yet.</p>
+      </div>
+    </div>
+  );
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)' }}>
+        <h2 className="section-title" style={{ margin: 0 }}>Report Card</h2>
+        <Link to="/student/report" className="btn btn-sm btn-outline" style={{ textDecoration: 'none' }}>
+          Full Report <HiOutlineArrowRight />
+        </Link>
+      </div>
+
+      {/* CGPA Summary */}
+      <div className="report-hero-stats" style={{ margin: '1rem 0 1.5rem' }}>
+        <div className="report-stat-big">
+          <span className="report-stat-val" style={{ color: 'var(--accent)' }}>{data.cgpa}</span>
+          <span className="report-stat-label">CGPA</span>
+        </div>
+        <div className="report-stat-big">
+          <span className="report-stat-val">{data.totalCreditsEarned}</span>
+          <span className="report-stat-label">Credits</span>
+        </div>
+        <div className="report-stat-big">
+          <span className="report-stat-val">{data.semesters.length}</span>
+          <span className="report-stat-label">Semesters</span>
+        </div>
+      </div>
+
+      {/* SGPA Bars */}
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: '1.25rem', height: '140px', marginBottom: '1.5rem' }}>
+        {data.semesters.map((sem, idx) => (
+          <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{sem.sgpa}</span>
+            <div style={{ width: '24px', height: '100px', background: 'var(--bg-input)', borderRadius: '12px', overflow: 'hidden', display: 'flex', alignItems: 'flex-end' }}>
+              <div style={{
+                width: '100%', borderRadius: '12px', minHeight: '4px',
+                height: `${(sem.sgpa / 10) * 100}%`,
+                background: sem.sgpa >= 8 ? 'var(--success)' : sem.sgpa >= 6 ? 'var(--accent)' : 'var(--warning)',
+                animation: 'barGrow 0.8s ease forwards',
+                animationDelay: `${idx * 0.15}s`
+              }} />
+            </div>
+            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>S{sem.semester}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Semester Summary */}
+      {data.semesters.map((sem, idx) => (
+        <div key={idx} style={{
+          background: 'var(--bg-input)', padding: '0.75rem 1rem', borderRadius: 'var(--radius)',
+          border: '1px solid var(--border)', marginBottom: '0.5rem',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+        }}>
+          <span style={{ fontWeight: 600 }}>Semester {sem.semester}</span>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <span className="badge badge-success">SGPA: {sem.sgpa}</span>
+            <span className="badge badge-default">{sem.totalCreditsEarned || 0} Cr</span>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
@@ -235,8 +402,8 @@ const InfoItem = ({ label, value, fullWidth, highlight, badge }) => (
     {badge ? (
       <span className="role-badge role-student">{value}</span>
     ) : (
-      <div style={{ 
-        fontSize: '1rem', 
+      <div style={{
+        fontSize: '1rem',
         fontWeight: highlight ? '700' : '500',
         color: highlight ? 'var(--accent)' : 'var(--text-primary)'
       }}>{value || '-'}</div>
@@ -245,3 +412,4 @@ const InfoItem = ({ label, value, fullWidth, highlight, badge }) => (
 );
 
 export default Profile;
+

@@ -13,11 +13,11 @@ const busScheduleSchema = new mongoose.Schema(
       trim: true
     },
     departureTime: {
-      type: String, // e.g., "08:30 AM"
+      type: String,
       required: true
     },
     arrivalTime: {
-      type: String, // e.g., "09:30 AM"
+      type: String,
       required: true
     },
     date: {
@@ -36,12 +36,19 @@ const busScheduleSchema = new mongoose.Schema(
       type: String,
       enum: ['scheduled', 'running', 'completed', 'cancelled'],
       default: 'scheduled'
+    },
+    // New fields
+    driverName: { type: String, trim: true },
+    driverPhone: { type: String, trim: true },
+    busType: { type: String, enum: ['AC', 'Non-AC', 'Mini'], default: 'Non-AC' },
+    seatLayout: {
+      rows: { type: Number, default: 10 },
+      seatsPerRow: { type: Number, default: 3 }
     }
   },
   { timestamps: true }
 );
 
-// Index for efficient searching
 busScheduleSchema.index({ route: 1, date: 1 });
 
 module.exports = mongoose.model('BusSchedule', busScheduleSchema);

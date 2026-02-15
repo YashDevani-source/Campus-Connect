@@ -38,12 +38,32 @@ const courseSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
+    // New fields
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'approved',
+    },
+    createdByRole: {
+      type: String,
+      enum: ['faculty', 'admin'],
+    },
+    requiredAttendance: {
+      type: Number,
+      default: 75,
+      min: 0,
+      max: 100,
+    },
+    credits: {
+      type: Number,
+      default: 3,
+    },
   },
   { timestamps: true }
 );
 
-// courseSchema.index({ code: 1 }, { unique: true }); // Already defined in schema
 courseSchema.index({ instructor: 1 });
 courseSchema.index({ department: 1 });
+courseSchema.index({ status: 1 });
 
 module.exports = mongoose.model('Course', courseSchema);
