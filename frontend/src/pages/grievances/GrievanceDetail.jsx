@@ -76,7 +76,7 @@ const GrievanceDetail = () => {
         </div>
 
         {/* Status Update — Authority/Admin only */}
-        {(user.role === 'authority' || user.role === 'admin') && (
+        {(user.role === 'authority' || user.role === 'managementMember' || user.role === 'admin') && (
           <div className="action-panel">
             <h3>Update Status</h3>
             <div className="inline-form">

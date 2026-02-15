@@ -1,225 +1,318 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
-import StatusBadge from '../../components/common/StatusBadge';
+import NoticeBoard from '../../components/dashboard/NoticeBoard';
 import {
   HiOutlineDocumentText, HiOutlineAcademicCap, HiOutlineBriefcase, HiOutlinePlus,
   HiOutlineExclamationCircle, HiOutlineUsers, HiOutlineClipboardList,
-  HiOutlineChatAlt2, HiOutlineTruck, HiOutlineCurrencyRupee, HiOutlineQuestionMarkCircle
+  HiOutlineChatAlt2, HiOutlineTruck, HiOutlineCurrencyRupee, HiOutlineQuestionMarkCircle,
+  HiOutlineChartBar, HiOutlineIdentification, HiOutlineDocumentDuplicate,
+  HiOutlineCheckCircle, HiOutlineClock, HiOutlineEye, HiOutlineArrowRight,
+  HiOutlineLightningBolt,
+  HiOutlineSpeakerphone, HiOutlineXCircle, HiOutlinePaperAirplane
 } from 'react-icons/hi';
 
 const Dashboard = () => {
   const { user } = useAuth();
 
-  // Render role-specific dashboard
   const dashboards = {
     student: <StudentDash />, faculty: <FacultyDash />,
-    authority: <AuthorityDash />, admin: <AdminDash />,
+    managementMember: <ManagementDash />, admin: <AdminDash />,
   };
 
   return (
-    <div className="page-container">
-      <div className="page-header">
-        <h1>Welcome, {user.name}!</h1>
-        <p className="subtitle">Your {user.role} dashboard</p>
+    <div className="page-container animate-fade-in">
+      {/* Hero Welcome */}
+      <div className="dash-hero">
+        <div className="dash-hero-content">
+          <div className="dash-hero-text">
+            <span className="dash-greeting">Good {getGreeting()},</span>
+            <h1 className="dash-name">{user.name}!</h1>
+            <p className="dash-subtitle">
+              {user.role === 'student' && '📚 Track your academics, attendance, and campus life'}
+              {user.role === 'faculty' && '👨‍🏫 Manage courses, attendance, and student queries'}
+              {user.role === 'managementMember' && '🏛️ Oversee campus operations and student services'}
+              {user.role === 'admin' && '⚡ Full control over users, courses, and platform'}
+            </p>
+          </div>
+          <div className="dash-hero-badge">
+            <span className={`role-badge role-${user.role}`} style={{ fontSize: '0.85rem', padding: '0.4rem 1rem' }}>
+              {user.role === 'managementMember' ? 'Management' : user.role}
+            </span>
+          </div>
+        </div>
       </div>
+
+      {/* Scrolling Notice Board Banner */}
+      {/* Notice Board Section */}
+      <NoticeBoard user={user} />
+
       {dashboards[user.role] || <StudentDash />}
     </div>
   );
 };
 
-const StatCard = ({ icon, label, value, color, to }) => (
-  <Link to={to || '#'} className={`stat-card stat-${color}`}>
-    <div className="stat-icon">{icon}</div>
-    <div className="stat-info">
-      <h3>{value}</h3>
-      <p>{label}</p>
+const getGreeting = () => {
+  const h = new Date().getHours();
+  if (h < 12) return 'Morning';
+  if (h < 17) return 'Afternoon';
+  return 'Evening';
+};
+
+/* ═══════ QUICK STAT CARD ═══════ */
+const QuickStat = ({ icon, label, value, color, to, delay }) => (
+  <Link to={to || '#'} className="quick-stat-card" style={{ animationDelay: delay || '0s' }}>
+    <div className="quick-stat-icon" style={{ background: `var(--${color}-bg, rgba(59,130,246,0.1))`, color: `var(--${color}, var(--accent))` }}>
+      {icon}
+    </div>
+    <div className="quick-stat-info">
+      <span className="quick-stat-value">{value ?? '—'}</span>
+      <span className="quick-stat-label">{label}</span>
     </div>
   </Link>
 );
 
-const DashboardCard = ({ icon, title, desc, to, color, delay }) => (
-  <Link to={to} className="grid-card glass-card" style={{ 
-    padding: '2rem', 
-    alignItems: 'center', 
-    textAlign: 'center', 
-    gap: '1rem',
-    animation: `scaleIn 0.5s ease-out forwards`,
-    animationDelay: delay || '0s',
-    opacity: 0, // initially hidden for animation
-    position: 'relative',
-    overflow: 'hidden'
-  }}>
-    <div style={{
-      position: 'absolute', top: 0, left: 0, width: '100%', height: '4px',
-      background: `var(--${color})`, opacity: 0.8
-    }} />
-    <div className={`stat-icon`} style={{ 
-      color: `var(--${color})`, 
-      fontSize: '3rem', 
-      marginBottom: '0.5rem',
-      filter: `drop-shadow(0 4px 10px var(--${color}))`
-    }}>{icon}</div>
-    <h3 style={{ fontSize: '1.25rem', fontWeight: '700' }}>{title}</h3>
-    <p className="text-muted" style={{ fontSize: '0.9rem', lineHeight: '1.5' }}>{desc}</p>
-    <div style={{ 
-      marginTop: '0.5rem', fontSize: '0.8rem', fontWeight: '600', color: `var(--${color})`,
-      display: 'flex', alignItems: 'center', gap: '0.25rem'
-    }}>
-      Explore &rarr;
+/* ═══════ ACTION CARD ═══════ */
+const ActionCard = ({ icon, title, desc, to, color, delay }) => (
+  <Link to={to} className="action-card animate-scale-in" style={{ animationDelay: delay || '0s' }}>
+    <div className="action-card-accent" style={{ background: `var(--${color}, var(--accent))` }} />
+    <div className="action-card-icon" style={{ color: `var(--${color}, var(--accent))` }}>
+      {icon}
     </div>
+    <h3 className="action-card-title">{title}</h3>
+    <p className="action-card-desc">{desc}</p>
+    <span className="action-card-link" style={{ color: `var(--${color}, var(--accent))` }}>
+      Explore <HiOutlineArrowRight />
+    </span>
   </Link>
 );
 
+/* ═══════ STUDENT DASHBOARD ═══════ */
 const StudentDash = () => {
+  const [stats, setStats] = useState({ payments: 0, pendingPayments: 0, grievances: 0, courses: 0, bookings: 0, certificates: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [pay, griev, courses, bookings, certs] = await Promise.allSettled([
+          api.get('/student/payments'),
+          api.get('/grievances'),
+          api.get('/courses'),
+          api.get('/student/bus/bookings'),
+          api.get('/student/certificates'),
+        ]);
+        const payments = pay.status === 'fulfilled' ? pay.value.data.data : [];
+        const pendingPay = Array.isArray(payments) ? payments.filter(p => p.status === 'pending').length : 0;
+        setStats({
+          payments: Array.isArray(payments) ? payments.length : 0,
+          pendingPayments: pendingPay,
+          grievances: griev.status === 'fulfilled' ? (griev.value.data.data.total || 0) : 0,
+          courses: courses.status === 'fulfilled' ? (courses.value.data.data.total || 0) : 0,
+          bookings: bookings.status === 'fulfilled' ? (Array.isArray(bookings.value.data.data) ? bookings.value.data.data.length : 0) : 0,
+          certificates: certs.status === 'fulfilled' ? (Array.isArray(certs.value.data.data) ? certs.value.data.data.length : 0) : 0,
+        });
+      } catch { }
+      finally { setLoading(false); }
+    };
+    load();
+  }, []);
+
   return (
     <>
-      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem', marginTop: '1rem' }}>
-        <DashboardCard 
-          icon={<HiOutlineExclamationCircle />} 
-          title="Grievances" 
-          desc="Track & file complaints" 
-          to="/grievances" 
-          color="orange"
-          delay="0.1s"
-        />
-        <DashboardCard 
-          icon={<HiOutlineAcademicCap />} 
-          title="Academics" 
-          desc="All your study material" 
-          to="/courses" 
-          color="blue" 
-          delay="0.15s"
-        />
-        <DashboardCard 
-          icon={<HiOutlineBriefcase />} 
-          title="Opportunities" 
-          desc="Internships & jobs" 
-          to="/opportunities" 
-          color="green" 
-          delay="0.2s"
-        />
-        <DashboardCard 
-          icon={<HiOutlineUsers />} 
-          title="Community" 
-          desc="Clubs & events" 
-          to="/clubs" 
-          color="purple" 
-          delay="0.25s"
-        />
-        <DashboardCard 
-          icon={<HiOutlineQuestionMarkCircle />} 
-          title="Doubts Forum" 
-          desc="Expert solutions" 
-          to="/doubts" 
-          color="info" 
-          delay="0.3s"
-        />
-        <DashboardCard 
-          icon={<HiOutlineChatAlt2 />} 
-          title="Class Chats" 
-          desc="Connect with peers" 
-          to="/chats" 
-          color="accent" 
-          delay="0.35s"
-        />
-        <DashboardCard 
-          icon={<HiOutlineTruck />} 
-          title="Transport" 
-          desc="Bus schedules" 
-          to="/transport" 
-          color="warning" 
-          delay="0.4s"
-        />
-        <DashboardCard 
-          icon={<HiOutlineCurrencyRupee />} 
-          title="Payments" 
-          desc="Manage fees" 
-          to="/fees" 
-          color="success" 
-          delay="0.45s"
-        />
+      {/* Quick Stats Row */}
+      <div className="quick-stats-row">
+        <QuickStat icon={<HiOutlineAcademicCap />} label="Courses" value={loading ? '…' : stats.courses} color="accent" to="/courses" delay="0.05s" />
+        <QuickStat icon={<HiOutlineExclamationCircle />} label="Grievances" value={loading ? '…' : stats.grievances} color="warning" to="/grievances" delay="0.1s" />
+        <QuickStat icon={<HiOutlineCurrencyRupee />} label="Pending Fees" value={loading ? '…' : stats.pendingPayments} color="danger" to="/student/payments" delay="0.15s" />
+        <QuickStat icon={<HiOutlineTruck />} label="Bookings" value={loading ? '…' : stats.bookings} color="info" to="/student/bus" delay="0.2s" />
+      </div>
+
+      {/* Module Cards */}
+      <h2 className="section-title" style={{ marginTop: '0.5rem' }}>Quick Access</h2>
+      <div className="action-cards-grid">
+        <ActionCard icon={<HiOutlineExclamationCircle />} title="Grievances" desc="Track & file complaints" to="/grievances" color="warning" delay="0.1s" />
+        <ActionCard icon={<HiOutlineAcademicCap />} title="Academics" desc="Courses & study material" to="/courses" color="accent" delay="0.15s" />
+        <ActionCard icon={<HiOutlineBriefcase />} title="Opportunities" desc="Internships & jobs" to="/opportunities" color="success" delay="0.2s" />
+        <ActionCard icon={<HiOutlineUsers />} title="Community" desc="Clubs & events" to="/clubs" color="purple" delay="0.25s" />
+        <ActionCard icon={<HiOutlineQuestionMarkCircle />} title="Doubts Forum" desc="Get expert solutions" to="/courses" color="info" delay="0.3s" />
+        <ActionCard icon={<HiOutlineChatAlt2 />} title="Class Chats" desc="Connect with peers" to="/chat" color="pink" delay="0.35s" />
+        <ActionCard icon={<HiOutlineTruck />} title="Transport" desc="Bus schedules & booking" to="/student/bus" color="warning" delay="0.4s" />
+        <ActionCard icon={<HiOutlineCurrencyRupee />} title="Payments" desc="Manage fees & dues" to="/student/payments" color="success" delay="0.45s" />
       </div>
     </>
   );
 };
 
+/* ═══════ FACULTY DASHBOARD ═══════ */
 const FacultyDash = () => {
-  const [stats, setStats] = useState({ courses: 0, opportunities: 0 });
+  const [stats, setStats] = useState({ courses: 0, opportunities: 0, grievances: 0 });
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [c, o] = await Promise.all([api.get('/courses'), api.get('/opportunities')]);
-        setStats({ courses: c.data.data.total, opportunities: o.data.data.total });
-      } catch {}
-    };
-    load();
-  }, []);
-
-  return (
-    <div className="stats-grid">
-      <StatCard icon={<HiOutlineAcademicCap />} label="My Courses" value={stats.courses} color="blue" to="/courses" />
-      <StatCard icon={<HiOutlineBriefcase />} label="Posted Opportunities" value={stats.opportunities} color="green" to="/opportunities" />
-      <StatCard icon={<HiOutlineDocumentText />} label="Upload Material" value="+" color="purple" to="/courses" />
-    </div>
-  );
-};
-
-const AuthorityDash = () => {
-  const [stats, setStats] = useState({ total: 0, pending: 0, inReview: 0, resolved: 0 });
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const [all, p, ir, r] = await Promise.all([
-          api.get('/grievances'), api.get('/grievances?status=pending'),
-          api.get('/grievances?status=in-review'), api.get('/grievances?status=resolved'),
+        const [c, o, g] = await Promise.allSettled([
+          api.get('/faculty/courses'),
+          api.get('/opportunities'),
+          api.get('/grievances'),
         ]);
-        setStats({ total: all.data.data.total, pending: p.data.data.total, inReview: ir.data.data.total, resolved: r.data.data.total });
-      } catch {}
-    };
-    load();
-  }, []);
-
-  return (
-    <div className="stats-grid">
-      <StatCard icon={<HiOutlineClipboardList />} label="Total Grievances" value={stats.total} color="blue" to="/grievances" />
-      <StatCard icon={<HiOutlineExclamationCircle />} label="Pending" value={stats.pending} color="orange" to="/grievances?status=pending" />
-      <StatCard icon={<HiOutlineDocumentText />} label="In Review" value={stats.inReview} color="purple" to="/grievances?status=in-review" />
-      <StatCard icon={<HiOutlineExclamationCircle />} label="Resolved" value={stats.resolved} color="green" to="/grievances?status=resolved" />
-    </div>
-  );
-};
-
-const AdminDash = () => {
-  const [stats, setStats] = useState({ users: 0, grievances: 0, courses: 0, opportunities: 0 });
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const [u, g, c, o] = await Promise.all([
-          api.get('/auth/users'), api.get('/grievances'),
-          api.get('/courses'), api.get('/opportunities'),
-        ]);
+        const courseData = c.status === 'fulfilled' ? c.value.data.data : [];
+        setCourses(Array.isArray(courseData) ? courseData : []);
         setStats({
-          users: u.data.data.total, grievances: g.data.data.total,
-          courses: c.data.data.total, opportunities: o.data.data.total,
+          courses: Array.isArray(courseData) ? courseData.length : 0,
+          opportunities: o.status === 'fulfilled' ? (o.value.data.data.total || 0) : 0,
+          grievances: g.status === 'fulfilled' ? (g.value.data.data.total || 0) : 0,
         });
-      } catch {}
+      } catch { }
+      finally { setLoading(false); }
     };
     load();
   }, []);
 
   return (
-    <div className="stats-grid">
-      <StatCard icon={<HiOutlineUsers />} label="Total Users" value={stats.users} color="blue" />
-      <StatCard icon={<HiOutlineExclamationCircle />} label="Grievances" value={stats.grievances} color="orange" to="/grievances" />
-      <StatCard icon={<HiOutlineAcademicCap />} label="Courses" value={stats.courses} color="green" to="/courses" />
-      <StatCard icon={<HiOutlineBriefcase />} label="Opportunities" value={stats.opportunities} color="purple" to="/opportunities" />
-    </div>
+    <>
+      <div className="quick-stats-row">
+        <QuickStat icon={<HiOutlineAcademicCap />} label="My Courses" value={loading ? '…' : stats.courses} color="accent" to="/faculty/courses" delay="0.05s" />
+        <QuickStat icon={<HiOutlineBriefcase />} label="Opportunities" value={loading ? '…' : stats.opportunities} color="success" to="/opportunities" delay="0.1s" />
+        <QuickStat icon={<HiOutlineExclamationCircle />} label="Grievances" value={loading ? '…' : stats.grievances} color="warning" to="/grievances" delay="0.15s" />
+      </div>
+
+      {courses.length > 0 && (
+        <>
+          <h2 className="section-title" style={{ marginTop: '0.5rem' }}>My Courses</h2>
+          <div className="action-cards-grid">
+            {courses.slice(0, 6).map((c, i) => (
+              <div key={c._id} className="action-card animate-scale-in" style={{ animationDelay: `${0.1 + i * 0.05}s`, cursor: 'default' }}>
+                <div className="action-card-accent" style={{ background: 'var(--accent)' }} />
+                <h3 className="action-card-title">{c.title}</h3>
+                <p className="action-card-desc">{c.code} • {c.enrolledStudents?.length || 0} students • {c.credits} credits</p>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                  <button onClick={() => navigate(`/faculty/attendance/${c._id}`)} className="btn btn-sm btn-outline">📋 Attendance</button>
+                  <button onClick={() => navigate(`/faculty/marks/${c._id}`)} className="btn btn-sm btn-outline">📝 Marks</button>
+                  <button onClick={() => navigate(`/faculty/analytics/${c._id}`)} className="btn btn-sm btn-primary">📊 Analytics</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      <h2 className="section-title" style={{ marginTop: '1.5rem' }}>Quick Actions</h2>
+      <div className="action-cards-grid">
+        <ActionCard icon={<HiOutlineAcademicCap />} title="My Courses" desc="Manage all courses" to="/faculty/courses" color="accent" delay="0.1s" />
+        <ActionCard icon={<HiOutlineBriefcase />} title="Post Opportunity" desc="Internships & research" to="/opportunities" color="success" delay="0.15s" />
+        <ActionCard icon={<HiOutlineChatAlt2 />} title="Messages" desc="Chat with students" to="/chat" color="info" delay="0.2s" />
+        <ActionCard icon={<HiOutlineExclamationCircle />} title="Grievances" desc="Your filed grievances" to="/grievances" color="warning" delay="0.25s" />
+      </div>
+    </>
   );
 };
+
+/* ═══════ MANAGEMENT DASHBOARD ═══════ */
+const ManagementDash = () => {
+  const [stats, setStats] = useState({ total: 0, pending: 0, inReview: 0, resolved: 0, payments: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [g, pay] = await Promise.allSettled([
+          api.get('/management/grievances'),
+          api.get('/management/payments'),
+        ]);
+        const gData = g.status === 'fulfilled' ? g.value.data.data : {};
+        const grievances = gData.grievances || [];
+        setStats({
+          total: gData.total || 0,
+          pending: grievances.filter(gr => gr.status === 'pending').length,
+          inReview: grievances.filter(gr => gr.status === 'in-review').length,
+          resolved: grievances.filter(gr => gr.status === 'resolved').length,
+          payments: pay.status === 'fulfilled' ? (pay.value.data.data.total || 0) : 0,
+        });
+      } catch { }
+      finally { setLoading(false); }
+    };
+    load();
+  }, []);
+
+  return (
+    <>
+      <div className="quick-stats-row">
+        <QuickStat icon={<HiOutlineClipboardList />} label="Total Grievances" value={loading ? '…' : stats.total} color="accent" to="/management/grievances" delay="0.05s" />
+        <QuickStat icon={<HiOutlineClock />} label="Pending" value={loading ? '…' : stats.pending} color="warning" to="/management/grievances" delay="0.1s" />
+        <QuickStat icon={<HiOutlineEye />} label="In Review" value={loading ? '…' : stats.inReview} color="info" to="/management/grievances" delay="0.15s" />
+        <QuickStat icon={<HiOutlineCheckCircle />} label="Resolved" value={loading ? '…' : stats.resolved} color="success" to="/management/grievances" delay="0.2s" />
+        <QuickStat icon={<HiOutlineCurrencyRupee />} label="Payments" value={loading ? '…' : stats.payments} color="purple" to="/management/fees" delay="0.25s" />
+      </div>
+
+      <h2 className="section-title" style={{ marginTop: '0.5rem' }}>Management Console</h2>
+      <div className="action-cards-grid">
+        <ActionCard icon={<HiOutlineExclamationCircle />} title="Grievance Manager" desc="Review & resolve complaints" to="/management/grievances" color="warning" delay="0.1s" />
+        <ActionCard icon={<HiOutlineCurrencyRupee />} title="Fee Management" desc="Create & track payments" to="/management/fees" color="success" delay="0.15s" />
+        <ActionCard icon={<HiOutlineTruck />} title="Bus Management" desc="Upload schedules & routes" to="/management/bus" color="accent" delay="0.2s" />
+        <ActionCard icon={<HiOutlineDocumentText />} title="Certificates" desc="Issue student certificates" to="/management/certificates" color="purple" delay="0.25s" />
+        <ActionCard icon={<HiOutlineIdentification />} title="ID Cards" desc="Manage student ID cards" to="/management/idcards" color="info" delay="0.3s" />
+        <ActionCard icon={<HiOutlineBriefcase />} title="Opportunities" desc="Post internships & research" to="/opportunities" color="success" delay="0.35s" />
+      </div>
+    </>
+  );
+};
+
+/* ═══════ ADMIN DASHBOARD ═══════ */
+const AdminDash = () => {
+  const [stats, setStats] = useState({ users: 0, grievances: 0, courses: 0, opportunities: 0, pendingCourses: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [u, g, c, o] = await Promise.allSettled([
+          api.get('/admin/users'),
+          api.get('/admin/grievances'),
+          api.get('/courses'),
+          api.get('/opportunities'),
+        ]);
+        const courseData = c.status === 'fulfilled' ? c.value.data.data : {};
+        setStats({
+          users: u.status === 'fulfilled' ? (u.value.data.data.total || 0) : 0,
+          grievances: g.status === 'fulfilled' ? (g.value.data.data.total || 0) : 0,
+          courses: courseData.total || 0,
+          opportunities: o.status === 'fulfilled' ? (o.value.data.data.total || 0) : 0,
+        });
+      } catch { }
+      finally { setLoading(false); }
+    };
+    load();
+  }, []);
+
+  return (
+    <>
+      <div className="quick-stats-row">
+        <QuickStat icon={<HiOutlineUsers />} label="Total Users" value={loading ? '…' : stats.users} color="accent" to="/admin/users" delay="0.05s" />
+        <QuickStat icon={<HiOutlineExclamationCircle />} label="Grievances" value={loading ? '…' : stats.grievances} color="warning" to="/admin/grievances" delay="0.1s" />
+        <QuickStat icon={<HiOutlineAcademicCap />} label="Courses" value={loading ? '…' : stats.courses} color="success" to="/courses" delay="0.15s" />
+        <QuickStat icon={<HiOutlineBriefcase />} label="Opportunities" value={loading ? '…' : stats.opportunities} color="purple" to="/opportunities" delay="0.2s" />
+      </div>
+
+      <h2 className="section-title" style={{ marginTop: '0.5rem' }}>Admin Console</h2>
+      <div className="action-cards-grid">
+        <ActionCard icon={<HiOutlineUsers />} title="User Management" desc="View, search & manage users" to="/admin/users" color="accent" delay="0.1s" />
+        <ActionCard icon={<HiOutlineExclamationCircle />} title="All Grievances" desc="Global grievance overview" to="/admin/grievances" color="warning" delay="0.15s" />
+        <ActionCard icon={<HiOutlineAcademicCap />} title="Course Approval" desc="Approve & assign courses" to="/admin/course-approval" color="success" delay="0.2s" />
+        <ActionCard icon={<HiOutlineBriefcase />} title="Opportunities" desc="Manage all opportunities" to="/opportunities" color="purple" delay="0.25s" />
+        <ActionCard icon={<HiOutlineClipboardList />} title="All Courses" desc="Browse all platform courses" to="/courses" color="info" delay="0.3s" />
+        <ActionCard icon={<HiOutlineChatAlt2 />} title="Messages" desc="Platform chat" to="/chat" color="pink" delay="0.35s" />
+      </div>
+    </>
+  );
+};
+
+
 
 export default Dashboard;
+

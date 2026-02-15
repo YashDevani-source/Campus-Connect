@@ -40,7 +40,7 @@ const Navbar = () => {
       </div>
       <div className="navbar-links">
         <Link to="/dashboard" className={location.pathname === '/dashboard' ? 'active' : ''}>Dashboard</Link>
-        {(user.role === 'student' || user.role === 'authority' || user.role === 'admin') && (
+        {(user.role === 'student' || user.role === 'faculty' || user.role === 'managementMember' || user.role === 'admin') && (
           <Link to="/grievances" className={location.pathname.startsWith('/grievances') ? 'active' : ''}>Grievances</Link>
         )}
         <Link to="/courses" className={location.pathname.startsWith('/courses') ? 'active' : ''}>Academics</Link>

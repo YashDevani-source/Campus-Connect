@@ -22,12 +22,12 @@ const seedData = async () => {
       { name: 'Admin User', email: 'admin@aegis.edu', password: 'admin123', role: 'admin', department: 'Administration' },
       { name: 'Dr. Sharma', email: 'faculty@aegis.edu', password: 'faculty123', role: 'faculty', department: 'Computer Science' },
       { name: 'Prof. Gupta', email: 'faculty2@aegis.edu', password: 'faculty123', role: 'faculty', department: 'Electrical Engineering' },
-      { name: 'Authority Officer', email: 'authority@aegis.edu', password: 'authority123', role: 'authority', department: 'Student Affairs' },
+      { name: 'Management Officer', email: 'management@aegis.edu', password: 'management123', role: 'managementMember', department: 'Student Affairs' },
       { name: 'Rahul Kumar', email: 'student@aegis.edu', password: 'student123', role: 'student', department: 'Computer Science', rollNumber: 'CS2024001' },
       { name: 'Priya Singh', email: 'student2@aegis.edu', password: 'student123', role: 'student', department: 'Electrical Engineering', rollNumber: 'EE2024001' },
     ]);
 
-    const [admin, faculty, faculty2, authority, student, student2] = users;
+    const [admin, faculty, faculty2, management, student, student2] = users;
 
     // Create courses
     const courses = await Course.create([
@@ -38,7 +38,7 @@ const seedData = async () => {
 
     // Create grievances
     await Grievance.create([
-      { title: 'Library Wi-Fi Issues', description: 'The Wi-Fi in the library has been extremely slow for the past week, affecting our study sessions.', category: 'infrastructure', priority: 'high', submittedBy: student._id, assignedTo: authority._id, status: 'in-review', statusHistory: [{ status: 'pending', changedBy: student._id }, { status: 'in-review', changedBy: authority._id }], comments: [{ text: 'We are looking into this issue.', author: authority._id }] },
+      { title: 'Library Wi-Fi Issues', description: 'The Wi-Fi in the library has been extremely slow for the past week, affecting our study sessions.', category: 'infrastructure', priority: 'high', submittedBy: student._id, assignedTo: management._id, status: 'in-review', statusHistory: [{ status: 'pending', changedBy: student._id }, { status: 'in-review', changedBy: management._id }], comments: [{ text: 'We are looking into this issue.', author: management._id }] },
       { title: 'Hostel Water Supply', description: 'Irregular water supply in Hostel Block C during morning hours.', category: 'hostel', priority: 'medium', submittedBy: student2._id, statusHistory: [{ status: 'pending', changedBy: student2._id }] },
     ]);
 
@@ -53,7 +53,7 @@ const seedData = async () => {
     console.log('\n📋 Test Accounts:');
     console.log('  Admin:     admin@aegis.edu / admin123');
     console.log('  Faculty:   faculty@aegis.edu / faculty123');
-    console.log('  Authority: authority@aegis.edu / authority123');
+    console.log('  Management: management@aegis.edu / management123');
     console.log('  Student:   student@aegis.edu / student123');
 
     process.exit(0);

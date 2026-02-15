@@ -14,6 +14,7 @@ router.post('/login', authLimiter, validate(loginSchema), authController.login);
 // Protected routes
 router.get('/me', auth, authController.getMe);
 router.patch('/me', auth, authController.updateProfile);
+router.get('/search', auth, authController.searchUsers);
 
 // Admin routes
 router.get('/users', auth, authorize('admin'), authController.getAllUsers);

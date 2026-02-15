@@ -19,7 +19,14 @@ exports.register = async (data) => {
 
   return {
     token,
-    user: { id: user._id, name: user.name, email: user.email, role: user.role },
+    user: {
+      _id: user._id,
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      department: user.department
+    },
   };
 };
 
@@ -42,7 +49,14 @@ exports.login = async ({ email, password }) => {
 
   return {
     token,
-    user: { id: user._id, name: user.name, email: user.email, role: user.role },
+    user: {
+      _id: user._id,
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      department: user.department
+    },
   };
 };
 
@@ -92,4 +106,14 @@ exports.updateProfile = async (userId, updateData) => {
     throw err;
   }
   return user;
+};
+
+exports.searchUsers = async (keyword, currentUserId) => {
+  const users = await User.find({
+    $or: [
+      { name: { $regex: keyword, $options: "i" } },
+      { email: { $regex: keyword, $options: "i" } },
+    ],
+  }).find({ _id: { $ne: currentUserId } });
+  return users;
 };

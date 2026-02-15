@@ -17,7 +17,7 @@ const auth = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'User not found.' });
     }
 
-    req.user = { id: user._id, role: user.role, name: user.name, email: user.email };
+    req.user = { id: user._id.toString(), role: user.role, name: user.name, email: user.email };
     next();
   } catch (error) {
     return res.status(401).json({ success: false, message: 'Invalid token.' });
